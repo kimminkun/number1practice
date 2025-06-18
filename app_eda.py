@@ -348,6 +348,7 @@ class EDA:
             st.subheader("누적 영역 그래프")
             pivot2 = df.pivot(index='연도', columns='지역', values='인구').drop('전국', axis=1)
             pivot2.rename(columns=region_map, inplace=True)
+            pivot2.columns.name = None
             fig3, ax3 = plt.subplots()
             pivot2.plot.area(ax=ax3, colormap='tab20')
             ax3.set_title("Population by Region Over Time")
