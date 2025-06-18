@@ -223,34 +223,34 @@ class EDA:
         numeric_cols = ['인구', '출생아수(명)', '사망자수(명)']
         df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric)
 
-        # Create tabs
+        # Create 6 tabs
         tabs = st.tabs([
-            "결측치 및 중복 확인",
-            "기초 통계",
-            "연도별 추이",
-            "지역별 변화량",
-            "증감률 상위",
-            "누적영역그래프"
+            "Missing & Duplicates",
+            "Basic Statistics",
+            "Yearly Trend",
+            "Regional Change",
+            "Top Changes",
+            "Area Chart"
         ])
 
         # Tab 1: Missing & Duplicates
         with tabs[0]:
-            st.subheader("결측치 및 중복 확인")
+            st.subheader("Missing & Duplicates")
             st.write("**Missing values per column**")
             st.write(df.isnull().sum())
-            st.write("**Duplicate rows count**: {}".format(df.duplicated().sum()))
+            st.write(f"**Duplicate rows count**: {df.duplicated().sum()}")
 
         # Tab 2: Basic Statistics
         with tabs[1]:
-            st.subheader("기초 통계")
+            st.subheader("Basic Statistics")
             buf = io.StringIO()
             df.info(buf=buf)
             st.text(buf.getvalue())
             st.write(df.describe())
 
-        # Tab 3: Yearly Total Population Trend
+        # Tab 3: Yearly Trend
         with tabs[2]:
-            st.subheader("Total Population Trend by Year")
+            st.subheader("Yearly Trend")
             df_nation = df[df['지역'] == '전국'].sort_values('연도')
             fig, ax = plt.subplots()
             sns.lineplot(data=df_nation, x='연도', y='인구', marker='o', ax=ax)
@@ -268,9 +268,9 @@ class EDA:
             ax.annotate(f"2035 Projection: {int(proj_pop):,}", (proj_year, proj_pop))
             st.pyplot(fig)
 
-        # Tab 4: Regional Population Change Ranking
+        # Tab 4: Regional Change
         with tabs[3]:
-            st.subheader("Population Change by Region (Last 5 Years)")
+            st.subheader("Regional Change")
             years = sorted(df['연도'].unique())
             last5 = years[-5:]
             pivot = df.pivot(index='지역', columns='연도', values='인구')
@@ -284,26 +284,12 @@ class EDA:
             ax.set_ylabel("Region")
             for p in ax.patches:
                 width = p.get_width()
-                ax.text(width + 0.1, p.get_y() + p.get_height() / 2, f"{width:.1f}", va='center')
+                ax.text(width + 0.1, p.get_y() + p.get_height()/2, f"{width:.1f}", va='center')
             st.pyplot(fig)
-            # Percentage change
-            pct = ((pivot[last5[-1]] - pivot[last5[0]]) / pivot[last5[0]] * 100).drop('전국')
-            pct.index = pct.index.map(region_map)
-            pct = pct.sort_values(ascending=False)
-            fig2, ax2 = plt.subplots()
-            sns.barplot(x=pct.values, y=pct.index, ax=ax2)
-            ax2.set_title("Percentage Change by Region (Last 5 Years)")
-            ax2.set_xlabel("Change (%)")
-            ax2.set_ylabel("Region")
-            for p in ax2.patches:
-                width = p.get_width()
-                ax2.text(width + 0.5, p.get_y() + p.get_height() / 2, f"{width:.1f}%", va='center')
-            st.pyplot(fig2)
-            st.write("This shows the absolute and relative population changes over the last 5 years for each region.")
 
-        # Tab 5: Top Diff Cases
+        # Tab 5: Top Changes
         with tabs[4]:
-            st.subheader("Top 100 Population Changes by Year and Region")
+            st.subheader("Top Changes")
             df_sorted = df[df['지역'] != '전국'].sort_values(['지역', '연도'])
             df_sorted['diff'] = df_sorted.groupby('지역')['인구'].diff()
             top100 = df_sorted.sort_values('diff', ascending=False).head(100)
@@ -312,9 +298,9 @@ class EDA:
                       .applymap(lambda v: 'background-color: lightblue' if v > 0 else 'background-color: lightcoral', subset=['diff']))
             st.write(styled)
 
-        # Tab 6: Cumulative Area Chart
+        # Tab 6: Area Chart
         with tabs[5]:
-            st.subheader("Cumulative Area Chart of Population by Region")
+            st.subheader("Area Chart")
             pivot2 = df.pivot(index='연도', columns='지역', values='인구').drop('전국', axis=1)
             pivot2.rename(columns=region_map, inplace=True)
             fig, ax = plt.subplots()
