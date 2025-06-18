@@ -203,7 +203,7 @@ region_map = {
     '경기': 'Gyeonggi', '강원': 'Gangwon', '충북': 'Chungbuk', '충남': 'Chungnam',
     '전북': 'Jeonbuk', '전남': 'Jeonnam', '경북': 'Gyeongbuk', '경남': 'Gyeongnam',
     '제주': 'Jeju'
-}---------------------
+}
 # EDA 페이지 클래스
 # ---------------------
 class EDA:
