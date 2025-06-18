@@ -179,12 +179,12 @@ class EDA:
             return
 
         df_temp = pd.read_csv(uploaded)
-        if '연도' in df_temp.columns:   #커밋용
+        if 'datetime' in df_temp.columns:   #커밋용
             uploaded.seek(0)
-            df = pd.read_csv(uploaded, parse_dates=['연도'])
+            df = pd.read_csv(uploaded, parse_dates=['datetime'])
         else:
             df = df_temp
-            st.warning("⚠️ '연도도' 열이 없어 시간 기반 분석은 제한됩니다.")
+            st.warning("⚠️ 'datetime' 열이 없어 시간 기반 분석은 제한됩니다.")
 
         tabs = st.tabs([
             "9. Population Summary",
