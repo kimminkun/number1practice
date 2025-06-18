@@ -224,14 +224,15 @@ class EDA:
         df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric)
 
         # Create 6 tabs
-        tabs = st.tabs([
-            "Missing & Duplicates",
-            "Basic Statistics",
-            "Yearly Trend",
-            "Regional Change",
-            "Top Changes",
-            "Area Chart"
-        ])
+       tabs = st.tabs([
+    "결측치 및 중복 확인",
+    "기초 통계",
+    "연도별 추이",
+    "지역별 변화량",
+    "증감률 상위",
+    "누적 영역 그래프"
+])
+
 
         # Tab 1: Missing & Duplicates
         with tabs[0]:
