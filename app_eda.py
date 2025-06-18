@@ -179,7 +179,7 @@ class EDA:
             return
 
         df_temp = pd.read_csv(uploaded)
-        if '연도' in df_temp.columns:
+        if '연도' in df_temp.columns:   #커밋용
             uploaded.seek(0)
             df = pd.read_csv(uploaded, parse_dates=['연도'])
         else:
