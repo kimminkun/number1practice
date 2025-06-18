@@ -221,7 +221,79 @@ class EDA:
                 st.text(buffer.getvalue())
                 st.dataframe(pop_df.describe())
 
-            # 나머지 탭: Yearly Trend, Regional Change 등은 생략 가능 (코드 동일)
+            with tabs[1]:
+        st.header("📈 Yearly Population Trend")
+        total_df = pop_df[pop_df['지역'] == '전국']
+        fig, ax = plt.subplots()
+        sns.lineplot(data=total_df, x='연도', y='인구', marker='o', ax=ax)
+        recent = total_df.sort_values('연도').tail(3)
+        birth_sum = recent['출생아수(명)'].sum()
+        death_sum = recent['사망자수(명)'].sum()
+        forecast_2035 = total_df['인구'].iloc[-1] + (birth_sum - death_sum)
+        ax.axvline(x=2035, color='gray', linestyle='--')
+        ax.scatter(2035, forecast_2035, color='red', label='Forecast 2035')
+        ax.annotate(f'{forecast_2035:,.0f}', xy=(2035, forecast_2035), xytext=(2035 + 0.5, forecast_2035),
+                    va='center', color='red')
+        ax.set_title("Population Trend")
+        ax.set_xlabel("Year")
+        ax.set_ylabel("Population")
+        ax.legend()
+        st.pyplot(fig)
+        st.markdown(f"**📍 Forecast 2035 Population: {forecast_2035:,.0f}**")
+
+    # 3. 지역별 인구 변화량 (최근 5년)
+    with tabs[2]:
+        st.header("📉 Population Change by Region (Last 5 Years)")
+        recent5 = pop_df[pop_df['연도'] >= pop_df['연도'].max() - 5]
+        delta = recent5[pop_df['지역'] != '전국'].groupby('지역_영문')['인구'].agg(['first', 'last'])
+        delta['change'] = delta['last'] - delta['first']
+        delta['ratio'] = (delta['change'] / delta['first']) * 100
+        delta = delta.sort_values('change', ascending=False)
+
+        # 변화량
+        fig1, ax1 = plt.subplots(figsize=(10, 6))
+        sns.barplot(data=delta.reset_index(), y='지역_영문', x='change', ax=ax1)
+        for i, v in enumerate(delta['change']):
+            ax1.text(v, i, f"{int(v/1000)}K", va='center')
+        ax1.set_title("Population Change")
+        ax1.set_xlabel("Change (people)")
+        st.pyplot(fig1)
+
+        # 변화율
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        delta_sorted = delta.sort_values('ratio', ascending=False)
+        sns.barplot(data=delta_sorted.reset_index(), y='지역_영문', x='ratio', ax=ax2)
+        for i, v in enumerate(delta_sorted['ratio']):
+            ax2.text(v, i, f"{v:.1f}%", va='center')
+        ax2.set_title("Population Change Rate")
+        ax2.set_xlabel("Change Rate (%)")
+        st.pyplot(fig2)
+
+        st.markdown("> 상위에 위치한 지역은 인구가 많이 증가한 지역입니다. 변화율과 절대 변화량을 함께 고려하세요.")
+
+    # 4. 증감률 상위 100건
+    with tabs[3]:
+        st.header("📋 Top 100 Yearly Population Changes")
+        diff_df = pop_df[pop_df['지역'] != '전국'].copy()
+        diff_df['증감'] = diff_df.groupby('지역')['인구'].diff()
+        top100 = diff_df.sort_values('증감', ascending=False).head(100)
+        styled = top100.style.format({'증감': "{:,.0f}"}).background_gradient(subset='증감', cmap='RdBu_r')
+        st.dataframe(styled)
+
+    # 5. 누적 영역 그래프
+    with tabs[4]:
+        st.header("📊 Regional Population Over Time")
+        pivot_df = pop_df[pop_df['지역'] != '전국'].pivot(index='연도', columns='지역_영문', values='인구')
+        pivot_df.fillna(0, inplace=True)
+        fig3, ax3 = plt.subplots(figsize=(12, 6))
+        pivot_df.plot.area(ax=ax3)
+        ax3.set_title("Population by Region")
+        ax3.set_xlabel("Year")
+        ax3.set_ylabel("Population")
+        st.pyplot(fig3)
+
+else:
+    st.warning("⚠️ Please upload `population_trends.csv` to begin analysis.")
 
         else:
             with tabs[0]:
